@@ -88,11 +88,11 @@
                               display="[[smScreen() ? 'icons' : 'all']]"
                               edge="top"
                               item.renderer="[[oj.KnockoutTemplateUtils.getRenderer('navTemplate', true)]]"
-                              selection="{{router.stateId}}">
+                              selection="{{selection.path}}">
           </oj-navigation-list>
         </div>
       </header>
-      <oj-module role="main" class="oj-web-applayout-max-width oj-web-applayout-content" config="[[moduleConfig]]">
+      <oj-module role="main" class="oj-web-applayout-max-width oj-web-applayout-content" config="[[module.koObservableConfig]]">
       </oj-module>
       <footer class="oj-web-applayout-footer" role="contentinfo">
         <div class="oj-web-applayout-footer-item oj-web-applayout-max-width">

@@ -1,7 +1,5 @@
 import * as ko from "knockout";
-import * as Logger from "ojs/ojlogger";
-import Router =  require("ojs/ojrouter");
-import rootViewModel from "./appController";
+import RootViewModel from "./appController";
 import "ojs/ojknockout";
 import "ojs/ojmodule";
 import "ojs/ojnavigationlist";
@@ -20,15 +18,6 @@ export default class Root {
   }
 
   init(): void {
-    Router.sync().then(
-      function (): void {
-        rootViewModel.loadModule();
-        // bind your ViewModel for the content of the whole page body.
-        ko.applyBindings(rootViewModel, document.getElementById("globalBody"));
-      },
-      function (error: { message: string }): void {
-        Logger.error("Error in root start: " + error.message);
-      }
-    );
+    ko.applyBindings(new RootViewModel(), document.getElementById("globalBody"));
   }
 }

@@ -1,13 +1,14 @@
 import * as ko from "knockout";
-import * as ModuleUtils from "ojs/ojmodule-element-utils";
 import * as ResponsiveUtils from "ojs/ojresponsiveutils";
 import * as  ResponsiveKnockoutUtils from "ojs/ojresponsiveknockoututils";
-import Router = require("ojs/ojrouter");
 import ArrayDataProvider = require("ojs/ojarraydataprovider");
 import "ojs/ojknockout";
 import "ojs/ojmodule-element";
 import { ojNavigationList } from "ojs/ojnavigationlist";
-import { ojModule } from "ojs/ojmodule-element";
+import ModuleRouterAdapter = require("ojs/ojmodulerouter-adapter");
+import KnockoutRouterAdapter = require("ojs/ojknockoutrouteradapter");
+import CoreRouter = require("ojs/ojcorerouter");
+import UrlParamAdapter = require("ojs/ojurlparamadapter");
 
 class FooterLink {
   name: string;
@@ -41,10 +42,10 @@ class NavDataItem {
   }
 }
 
-class RootViewModel {
+export default class RootViewModel {
   smScreen: ko.Observable<boolean>;
-  router: Router;
-  moduleConfig: ko.Observable<ojModule["config"]>;
+  module: ModuleRouterAdapter;
+  selection: KnockoutRouterAdapter;
   navDataSource: ojNavigationList<string, NavDataItem>["data"];
   appName: ko.Observable<string>;
   userLogin: ko.Observable<string>;
@@ -58,18 +59,16 @@ class RootViewModel {
     }
     
     // router setup
-    this.router = Router.rootInstance;
-    this.router.configure({
-      "dashboard": {label: "Dashboard", isDefault: true},
-      "incidents": {label: "Incidents"},
-      "customers": {label: "Customers"},
-      "about": {label: "About"}
-    });
-
-    Router.defaults.urlAdapter = new Router.urlParamAdapter();
-
-    // module config
-    this.moduleConfig = ko.observable({"view": [], "viewModel": null});
+    const router = new CoreRouter([
+      { path: '', redirect: 'dashboard' },
+      {path: "dashboard"},
+      {path: "incidents"},
+      {path: "customers"},
+      {path: "about"}
+    ], { urlAdapter: new UrlParamAdapter() });
+    router.sync();
+    this.selection = new KnockoutRouterAdapter(router);
+    this.module = new ModuleRouterAdapter(router, {});
 
     // navigation setup
     let navData: NavDataItem[] = [
@@ -98,22 +97,4 @@ class RootViewModel {
       new FooterLink({ name: "Your Privacy Rights", id: "yourPrivacyRights", linkTarget: "http://www.oracle.com/us/legal/privacy/index.html" })
     ]);
   }
-
-  loadModule(): void {
-    ko.computed(() => {
-      let name: string = this.router.moduleConfig.name();
-      let viewPath: string = `views/${name}.html`;
-      let modelPath: string = `viewModels/${name}`;
-      let masterPromise: Promise<any> = Promise.all([
-        ModuleUtils.createView({"viewPath": viewPath}),
-        ModuleUtils.createViewModel({"viewModelPath": modelPath})
-      ]);
-      masterPromise.then((values) => {
-          this.moduleConfig({"view": values[0],"viewModel": values[1].default});
-        }
-      );
-    });
-  }
 }
-
-export default new RootViewModel();
